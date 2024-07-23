@@ -1,0 +1,146 @@
+document.addEventListener('DOMContentLoaded', () => {
+                const table = document.getElementById('myTables');
+                const tbody = table.tBodies[0];
+                const headers = table.getElementsByTagName('th');
+                let rows = Array.from(tbody.getElementsByTagName('tr'));
+                let currentPage = 1;
+                let recordsPerPage = 10; // Set default to 10
+                let isSearchActive = false;
+                let filteredRows = rows; // New variable to hold filtered rows
+
+                const updateTableDisplay = () => {
+                    const startIndex = (currentPage - 1) * recordsPerPage;
+                    const endIndex = startIndex + recordsPerPage;
+
+                    const rowsToDisplay = isSearchActive ? filteredRows : rows;
+                    rowsToDisplay.forEach((row, index) => {
+                        row.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
+                    });
+
+                    const totalRows = rowsToDisplay.length;
+                    document.getElementById('CountingPage').textContent = `${startIndex + 1} - ${Math.min(endIndex, totalRows)}`;
+                    document.getElementById('CountingFoot').textContent = `${startIndex + 1} - ${Math.min(endIndex, totalRows)}`;
+
+                    // Show correct counts
+                    document.querySelectorAll('.page-counting p').forEach(p => {
+                        p.textContent = `Showing ${startIndex + 1} to ${Math.min(endIndex, totalRows)} of ${totalRows} records`;
+                    });
+                    document.getElementById("totalRecords").textContent = `${totalRows} records`;
+
+                    // Enable/disable previous and next buttons
+                    const prevBtn = document.getElementById('prevBtn');
+                    const nextBtn = document.getElementById('nextBtn');
+
+                    prevBtn.style.display = currentPage === 1 ? prevBtn.style.opacity =".3" : prevBtn.style.opacity ="1";
+                    nextBtn.style.display = currentPage === Math.ceil(totalRows / recordsPerPage) ? nextBtn.style.opacity =".3" : nextBtn.style.opacity ="1";
+                };
+
+                const sortTable = (columnIndex) => {
+                    const currentSortOrder = table.getAttribute('data-sort-order');
+                    const compare = (rowA, rowB) => {
+                        const cellA = rowA.getElementsByTagName('td')[columnIndex].innerText.trim();
+                        const cellB = rowB.getElementsByTagName('td')[columnIndex].innerText.trim();
+
+                        // Handle empty cells
+                        if (cellA === '' && cellB !== '') return 1;
+                        if (cellA !== '' && cellB === '') return -1;
+                        if (cellA === '' && cellB === '') return 0;
+
+                        // Compare numbers
+                        const isNumber = !isNaN(cellA) && !isNaN(cellB);
+                        if (isNumber) return parseFloat(cellA) - parseFloat(cellB);
+
+                        // Compare dates
+                        const dateA = new Date(cellA);
+                        const dateB = new Date(cellB);
+                        if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
+
+                        // Compare text
+                        return cellA.localeCompare(cellB);
+                    };
+
+                    const rowsToSort = isSearchActive ? filteredRows : rows;
+                    rowsToSort.sort(compare);
+
+                    if (currentSortOrder === 'asc') {
+                        table.setAttribute('data-sort-order', 'desc');
+                    } else {
+                        rowsToSort.reverse();
+                        table.setAttribute('data-sort-order', 'asc');
+                    }
+
+                    rowsToSort.forEach(row => tbody.appendChild(row));
+
+                    for (let i = 0; i < headers.length; i++) {
+                        const arrow = headers[i].getElementsByClassName('sort-arrow')[0];
+                        if (i === columnIndex) {
+                            if (currentSortOrder === 'asc') {
+                                arrow.classList.remove('asc');
+                                arrow.classList.add('desc');
+                            } else {
+                                arrow.classList.remove('desc');
+                                arrow.classList.add('asc');
+                            }
+                        } else {
+                            arrow.classList.remove('asc', 'desc');
+                        }
+                    }
+
+                    updateTableDisplay();
+                };
+
+                document.querySelector('select[name="myTable_length"]').addEventListener('change', (e) => {
+                    recordsPerPage = parseInt(e.target.value);
+                    currentPage = 1;
+                    updateTableDisplay();
+                });
+
+                document.getElementById('prevBtn').addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        updateTableDisplay();
+                    }
+                });
+
+                document.getElementById('nextBtn').addEventListener('click', () => {
+                    if (currentPage < Math.ceil((isSearchActive ? filteredRows : rows).length / recordsPerPage)) {
+                        currentPage++;
+                        updateTableDisplay();
+                    }
+                });
+
+                Array.from(headers).forEach((header, index) => {
+                    header.addEventListener('click', () => sortTable(index));
+                });
+
+                const searchInput = document.querySelector('input[type="search"]');
+                searchInput.addEventListener('keyup', () => {
+                    const value = searchInput.value.toLowerCase();
+                    localStorage.setItem('searchValue', value);
+                    filterTable(value);
+                });
+
+                const filterTable = (value) => {
+                    isSearchActive = value !== '';
+                    filteredRows = rows.filter(row => row.textContent.toLowerCase().includes(value));
+                    currentPage = 1; // Reset to first page on search
+                    updateTableDisplay();
+                };
+
+                // Clear search input and reset table display
+                const clearSearch = document.getElementById("clearSearch");
+                clearSearch.addEventListener('click', function() {
+                    searchInput.value = '';
+                    localStorage.setItem('searchValue', '');
+                    filterTable(''); // Reset the table display
+                });
+
+                // Initialize search from localStorage
+                const savedValue = localStorage.getItem('searchValue');
+                if (savedValue) {
+                    searchInput.value = savedValue;
+                    filterTable(savedValue);
+                }
+
+                updateTableDisplay();
+            });

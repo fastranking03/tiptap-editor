@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './styles.scss';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
@@ -16,10 +16,9 @@ import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import { SketchPicker } from 'react-color';
 import CustomTableCell from './CustomTableCell'; // Adjust the import based on your file structure
+import PageBreak from './PageBreak';
 
-const MAX_CONTENT_LENGTH = 1000; // Adjust the limit as needed
-
-const Editor = () => {
+const EditorComponent = ({ outline, setOutline }) => {
   const { editor } = useCurrentEditor();
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
@@ -29,25 +28,42 @@ const Editor = () => {
   const [selectedCells, setSelectedCells] = useState([]);
   const [cellColor, setCellColor] = useState('#FFFFFF');
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [contentLength, setContentLength] = useState(0);
+  const [toggle, setToggle] = useState(false);
+  const [hg , setHg] = useState(false);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const updateOutline = () => {
+      const headings = [];
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === 'heading') {
+          headings.push({
+            text: node.textContent,
+            level: node.attrs.level,
+            pos,
+          });
+        }
+      });
+      setOutline(headings);
+    };
+
+    editor.on('update', updateOutline);
+
+    // Initial update
+    updateOutline();
+
+    // Cleanup
+    return () => {
+      editor.off('update', updateOutline);
+    };
+  }, [editor, setOutline]);
 
   if (!editor) {
     return null;
   }
-
-  // Monitor content length
-  editor.on('update', () => {
-    const content = editor.getText();
-    setContentLength(content.length);
-  });
-
-  // Prevent input if limit is exceeded
-  editor.on('transaction', ({ transaction }) => {
-    const content = editor.getText();
-    if (content.length > MAX_CONTENT_LENGTH) {
-      transaction.abort();
-    }
-  });
 
   const handleMouseEnter = (row, col) => {
     setRows(row);
@@ -76,9 +92,9 @@ const Editor = () => {
     selectedCells.forEach(() => {
       editor.chain().focus().setCellAttribute('backgroundColor', color.hex).run();
     });
-    setShowColorPicker(false)
+    setShowColorPicker(false);
   };
-  
+
   const gridStyle = {
     gridTemplateColumns: `repeat(${Math.min(maxCols, 20)}, 20px)`,
     gridTemplateRows: `repeat(${Math.min(maxRows, 20)}, 20px)`,
@@ -87,11 +103,27 @@ const Editor = () => {
   return (
     <>
       <div className="control-group taptap-header">
+        <div className='text-box position-relative'>
+          <button onClick={() => setToggle(!toggle)}>Normal Text</button>
+           {toggle && (
+            <div className='box-li comman-grid'>
+              <button onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? 'is-active' : ''}>Normal text</button>
+              <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'is-active H1' : 'H1'}>Title</button>
+              {Array.from({ length: 5 }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => editor.chain().focus().toggleHeading({ level: i + 1 + 1 }).run()}
+                  className={editor.isActive('heading', { level: i + 1 + 1 }) ? `is-active H${i + 1 + 1}` : `H${i + 1 + 1}`}
+                >Heading {i + 1 + 1}</button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="button-group">
           <div className='table-selector'>
             <button onClick={() => setIsSelecting(!isSelecting)}>Table</button>
             {isSelecting && (
-              <div className='table-grid' style={gridStyle} onMouseLeave={handleMouseLeave}>
+              <div className='comman-grid' style={gridStyle} onMouseLeave={handleMouseLeave}>
                 {Array.from({ length: Math.min(maxRows, 20) }).map((_, row) => (
                   <div key={row} className='table-grid-row'>
                     {Array.from({ length: Math.min(maxCols, 20) }).map((_, col) => (
@@ -116,6 +148,8 @@ const Editor = () => {
             )}
           </div>
           {/* Existing table and other buttons */}
+          <button onClick={() => editor.chain().focus().insertPageBreak().run()}>Insert Page Break</button>
+
           <button onClick={() => editor.chain().focus().addColumnBefore().run()}>Add column before</button>
           <button onClick={() => editor.chain().focus().addColumnAfter().run()}>Add column after</button>
           <button onClick={() => editor.chain().focus().deleteColumn().run()}>Delete column</button>
@@ -142,17 +176,29 @@ const Editor = () => {
           <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()}>Undo</button>
           <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()}>Redo</button>
           <button onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? 'is-active' : ''}>Paragraph</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()} className={editor.isActive('heading', { level: 6 }) ? 'is-active' : ''}>H6</button>
           <button onClick={() => editor.chain().focus().setColor('#958DF1').run()} className={editor.isActive('textStyle', { color: '#958DF1' }) ? 'is-active' : ''}>Purple</button>
           <button onClick={() => editor.chain().focus().setColor('#000').run()} className={editor.isActive('textStyle', { color: '#000' }) ? 'is-active' : ''}>Black</button>
           <button onClick={() => editor.chain().focus().setColor('rgb(255, 0, 0)').run()} className={editor.isActive('textStyle', { color: 'rgb(255, 0, 0)' }) ? 'is-active' : ''}>Red</button>
-          <button onClick={() => editor.chain().focus().setBackgroundColor('#000').run()} className={editor.isActive('textStyle', { backgroundColor: '#000' }) ? 'is-active' : ''}>Black Bg</button>
-        </div>
-      </div>
-      <div>
-        {contentLength > MAX_CONTENT_LENGTH && (
-          <div className="content-limit-warning">Content limit exceeded!</div>
-        )}
+          <div className='tip-highlight position-relative'>
+            <button onClick={() => setHg(!hg)}>Highlight</button>
+             {hg && (
+                <div className='comman-grid hg-grid'>
+                   <div>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgb(0, 0, 0)'}).run()} className={editor.isActive('highlight', { color: 'rgb(0, 0, 0)'}) ? 'is-active cm-hg' : 'cm-hg'}  style={{backgroundColor:'rgb(0, 0, 0)'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgb(67, 67, 67)' }).run()} className={editor.isActive('highlight', { color: 'rgb(67, 67, 67)' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'rgb(67, 67, 67)'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgb(102, 102, 102)' }).run()} className={editor.isActive('highlight', { color: 'rgb(102, 102, 102)' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'rgb(102, 102, 102)'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: 'rgb(153, 153, 153)' }).run()} className={editor.isActive('highlight', { color: 'rgb(153, 153, 153)' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'rgb(153, 153, 153)'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: '#B7B7B7' }).run()} className={editor.isActive('highlight', { color: '#B7B7B7' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'#B7B7B7'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: '#CCCCCC' }).run()} className={editor.isActive('highlight', { color: '#CCCCCC' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'#CCCCCC'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: '#D9D9D9' }).run()} className={editor.isActive('highlight', { color: '#D9D9D9' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'#D9D9D9'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: '#EFEFEF' }).run()} className={editor.isActive('highlight', { color: '#EFEFEF' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'#EFEFEF'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: '#F3F3F3' }).run()} className={editor.isActive('highlight', { color: '#F3F3F3' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'#F3F3F3'}}></button>
+                      <button onClick={() => editor.chain().focus().toggleHighlight({ color: '#FFFFFF' }).run()} className={editor.isActive('highlight', { color: '#FFFFFF' }) ? 'is-active cm-hg' : ' cm-hg'}  style={{backgroundColor:'#FFFFFF'}}></button>
+                     </div>
+                </div>
+             )}
+          </div>
+         </div>
       </div>
     </>
   );
@@ -162,7 +208,7 @@ const extensions = [
   Color,
   TextStyle.configure({ types: [ListItem.name] }),
   TextAlign.configure({ types: ['heading', 'paragraph'] }),
-  Highlight,
+  Highlight.configure({ multicolor: true }),
   Table.configure({
     resizable: true,
   }),
@@ -186,22 +232,36 @@ const extensions = [
     },
   }),
   LineHeight,
+  PageBreak,
 ];
 
 const content = ` `;
 
-export default () => {
+const EditorWrapper = () => {
+  const [outline, setOutline] = useState([]);
+
   return (
     <>
-     <div>
-          <div className='left-wrapper'>
-             
+      <div className='parent-wrapper'>
+        <div className='flex1'>
+          <EditorProvider style={{height:'800px'}} slotBefore={<EditorComponent outline={outline} setOutline={setOutline} />} extensions={extensions} content={content}></EditorProvider>
+        </div>
+        <div className='flex2'>
+          <div className='outline'>
+            <h3>Outline</h3>
+              {/* <p>Headings you add to the document will appear here.</p>  */}
+               <ul className='outline-ul'>
+                {outline.map((heading, index) => (
+                  <li key={index} style={{ marginLeft: `${(heading.level - 1) * 20}px` }}>
+                    {heading.text}
+                  </li>
+                ))}
+              </ul>
           </div>
-          <div className='main-warpper'>
-             <EditorProvider slotBefore={<Editor />} extensions={extensions} content={content}></EditorProvider>
-          </div>
-     </div>
+        </div>
+      </div>
     </>
-      
   );
 };
+
+export default EditorWrapper;

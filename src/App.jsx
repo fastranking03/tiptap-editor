@@ -3,9 +3,7 @@ import Custom from "./Custom";
 import MenuBar from "./MenuBar";
 import { BrowserRouter , Routes , Route } from "react-router-dom";
 
-
 function App() {
-  
 
   return (
     <>

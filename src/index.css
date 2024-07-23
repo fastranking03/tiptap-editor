@@ -8,11 +8,11 @@
   --gray-4: rgba(53, 38, 28, .3);
   --gray-5: rgba(28, 25, 23, .6);
   --green: #22C55E;
-  --purple: #00bcd4;
-  --purple-contrast: #00bcd4;
+  --purple: #eaeff0;
+  --purple-contrast: #eaeff0;
   --purple-light: rgba(88, 5, 255, .05);
   --yellow-contrast: #FACC15;
-  --yellow: rgba(250, 204, 21, .4);
+  --yellow: rgba(104, 86, 16, 0.4);
   --yellow-light: #FFFAE5;
   --red: #FF5C33;
   --red-light: #FFEBE5;
@@ -129,12 +129,10 @@ button.primary[disabled],input.primary[disabled],select.primary[disabled],textar
 
 button.is-active,input.is-active,select.is-active,textarea.is-active {
   background: var(--purple);
-  color: var(--white)
 }
 
 button.is-active:hover,input.is-active:hover,select.is-active:hover,textarea.is-active:hover {
   background-color: var(--purple-contrast);
-  color: var(--white)
 }
 
 button:not([disabled]),select:not([disabled]) {
@@ -364,10 +362,10 @@ kbd {
     border-top-left-radius: 15px;
 }
 .main-card{
-    /* box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     margin: 10px;
     border-radius: 20px;
-    height: 100vh; */
+    /* height: 100vh; */
 }
 
 table {

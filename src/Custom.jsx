@@ -88,23 +88,7 @@ const ResizableImage = Image.extend({
   },
 });
 
-const BackgroundColor = Color.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      backgroundColor: {
-        default: null,
-        parseHTML: element => element.style.backgroundColor,
-        renderHTML: attributes => {
-          if (!attributes.backgroundColor) {
-            return {};
-          }
-          return { style: `background-color: ${attributes.backgroundColor}` };
-        },
-      },
-    };
-  },
-});
+ 
 
 const Editor = () => {
   const { editor } = useCurrentEditor();
@@ -142,14 +126,7 @@ const Editor = () => {
           <button onClick={() => editor.chain().focus().toggleCode().run()} disabled={!editor.can().chain().focus().toggleCode().run()} className={editor.isActive('code') ? 'is-active' : ''}>Code</button>
           <button onClick={() => editor.chain().focus().unsetAllMarks().run()}>Clear marks</button>
           <button onClick={() => editor.chain().focus().clearNodes().run()}>Clear nodes</button>
-          <button onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? 'is-active' : ''}>Paragraph</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}>H1</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}>H2</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}>H3</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} className={editor.isActive('heading', { level: 4 }) ? 'is-active' : ''}>H4</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()} className={editor.isActive('heading', { level: 5 }) ? 'is-active' : ''}>H5</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()} className={editor.isActive('heading', { level: 6 }) ? 'is-active' : ''}>H6</button>
-          <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'is-active' : ''}>Bullet list</button>
+ 
           <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'is-active' : ''}>Ordered list</button>
           <button onClick={() => editor.chain().focus().toggleHighlight().run()} className={editor.isActive('highlight') ? 'is-active' : ''}>Highlight</button>
           <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}>Left</button>
@@ -163,7 +140,7 @@ const Editor = () => {
           <button onClick={() => editor.chain().focus().setColor('#958DF1').run()} className={editor.isActive('textStyle', { color: '#958DF1' }) ? 'is-active' : ''}>Purple</button>
           <button onClick={() => editor.chain().focus().setColor('#000').run()} className={editor.isActive('textStyle', { color: '#000' }) ? 'is-active' : ''}>Black</button>
           <button onClick={() => editor.chain().focus().setColor('rgb(255, 0, 0)').run()} className={editor.isActive('textStyle', { color: 'rgb(255, 0, 0)' }) ? 'is-active' : ''}>Red</button>
-          <button onClick={() => editor.chain().focus().setBackgroundColor('#000').run()} className={editor.isActive('textStyle', { backgroundColor: '#000' }) ? 'is-active' : ''}>Black Bg</button>
+         
           <button onClick={addImage}>Upload img</button>
         </div>
       </div>
@@ -172,7 +149,7 @@ const Editor = () => {
 };
 
 const extensions = [
-  BackgroundColor.configure({ types: [TextStyle.name, ListItem.name] }),
+ 
   TextStyle.configure({ types: [ListItem.name] }),
   TextAlign.configure({ types: ['heading', 'paragraph'] }),
   Highlight,

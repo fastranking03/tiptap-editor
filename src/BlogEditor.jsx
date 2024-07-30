@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import { IoSearch } from "react-icons/io5";
 import { MdOutlineInsertPageBreak } from "react-icons/md";
-
 import { RiListUnordered } from "react-icons/ri";
 import { LuListOrdered } from "react-icons/lu";
 import { AiOutlineBold } from "react-icons/ai";
 import { FiItalic, FiUnderline } from "react-icons/fi";
 import { IoIosUndo, IoIosRedo } from "react-icons/io";
-
 import "./styles.scss";
 import { Color } from "@tiptap/extension-color";
 import ListItem from "@tiptap/extension-list-item";
@@ -27,7 +24,8 @@ import CustomTableCell from "./CustomTableCell"; // Adjust the import based on y
 import PageBreak from "./PageBreak";
 import Typography from "./components/Typography";
 import TableComp from "./components/TableComp";
-import Font from "./components/Font";
+import FontFamily from '@tiptap/extension-font-family'
+import FontStyle from "./components/FontStyle";
 import HighlightComp from "./components/HighlightComp";
 import AlignComp from "./components/AlignComp";
 import LineSpaceComp from "./components/LineSpaceComp";
@@ -40,8 +38,9 @@ import LinkComp from "./components/LinkComp";
 import Youtube from "@tiptap/extension-youtube";
 import YoutubeComp from "./components/YoutubeComp";
 import ImageComp from "./components/ImageComp";
-import { Tooltip } from "react-tooltip";
-import "react-tooltip/dist/react-tooltip.css";
+import SearchComp from "./components/SearchComp";
+ 
+
 
 const EditorComponent = ({ outline, setOutline }) => {
   const { editor } = useCurrentEditor();
@@ -76,6 +75,7 @@ const EditorComponent = ({ outline, setOutline }) => {
     };
   }, [editor, setOutline]);
 
+ 
   if (!editor) {
     return null;
   }
@@ -85,15 +85,7 @@ const EditorComponent = ({ outline, setOutline }) => {
    
       <div className="control-group taptap-header">
         <div className="button-group">
-          <div>
-            <button
-              className="bg-none"
-              data-tooltip-id="my-tooltip"
-              data-tooltip-content="Search"
-            >
-              <IoSearch />
-            </button>
-          </div>
+        <SearchComp  editor={editor}/>
           <div>
             <button
               className="bg-none"
@@ -115,7 +107,7 @@ const EditorComponent = ({ outline, setOutline }) => {
             </button>
           </div>
           <Typography />
-          <Font />
+          <FontStyle />
           <FontSizeComp />
           <div>
             <button
@@ -211,6 +203,7 @@ const extensions = [
     defaultProtocol: "https",
     protocols: ["ftp", "mailto"],
   }),
+  FontFamily,  
   Youtube.configure({
     controls: false,
     nocookie: true,

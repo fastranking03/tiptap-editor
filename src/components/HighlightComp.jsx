@@ -1,12 +1,32 @@
-import { useState } from "react";
+import { useState ,useEffect ,useRef} from "react";
 import { useCurrentEditor } from '@tiptap/react';
 import { BiHighlight } from "react-icons/bi";
 
 function HighlightComp() {
    const { editor } = useCurrentEditor();
    const [hg , setHg] = useState(false);
+   const containerRef = useRef(null);
+
+   const handleClickOutside = (event) => {
+     if (containerRef.current && !containerRef.current.contains(event.target)) {
+       setHg(false);
+     }
+   };
+ 
+   useEffect(() => {
+     if (hg) {
+       document.addEventListener('mousedown', handleClickOutside);
+     } else {
+       document.removeEventListener('mousedown', handleClickOutside);
+     }
+ 
+     return () => {
+       document.removeEventListener('mousedown', handleClickOutside);
+     };
+   }, [hg]);
+
   return (
-    <div className='tip-HighlightComp position-relative'>
+    <div className='tip-HighlightComp position-relative' ref={containerRef}>
     <button className='bg-none' onClick={() => setHg(!hg)} data-tooltip-id="my-tooltip" data-tooltip-content="Highlight"><BiHighlight/></button>
      {hg && (
         <div className='comman-grid hg-grid'>

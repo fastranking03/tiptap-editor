@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState ,useRef ,useEffect} from "react";
 import { useCurrentEditor } from '@tiptap/react';
 import { MdFormatColorText } from "react-icons/md";
 
@@ -6,8 +6,27 @@ import { MdFormatColorText } from "react-icons/md";
 function ColorComp() {
    const { editor } = useCurrentEditor();
    const [hg , setHg] = useState(false);
+   const containerRef = useRef(null);
+
+   const handleClickOutside = (event) => {
+     if (containerRef.current && !containerRef.current.contains(event.target)) {
+       setHg(false);
+     }
+   };
+ 
+   useEffect(() => {
+     if (hg) {
+       document.addEventListener('mousedown', handleClickOutside);
+     } else {
+       document.removeEventListener('mousedown', handleClickOutside);
+     }
+ 
+     return () => {
+       document.removeEventListener('mousedown', handleClickOutside);
+     };
+   }, [hg]);
   return (
-    <div className='tip-textStyleComp position-relative'>
+    <div className='tip-textStyleComp position-relative' ref={containerRef}>
     <button className='bg-none' onClick={() => setHg(!hg)} data-tooltip-id="my-tooltip" data-tooltip-content="color"><MdFormatColorText/></button>
      {hg && (
         <div className='comman-grid hg-grid'>

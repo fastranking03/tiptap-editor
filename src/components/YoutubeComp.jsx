@@ -1,5 +1,5 @@
 import { useCurrentEditor } from '@tiptap/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState ,useRef ,useEffect } from 'react';
 import { MdOutlineVideoLabel } from "react-icons/md";
 
 function YoutubeComp() {
@@ -7,7 +7,25 @@ function YoutubeComp() {
     const [toggle, setToggle] = useState(false);
     const [url, setUrl] = useState('');
     const [error, setError] = useState('');
+    const containerRef = useRef(null);
 
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setToggle(false);
+      }
+    };
+  
+    useEffect(() => {
+      if (toggle) {
+        document.addEventListener('mousedown', handleClickOutside);
+      } else {
+        document.removeEventListener('mousedown', handleClickOutside);
+      }
+  
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, [toggle]);
     const isValidVideoUrl = (string) => {
         const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com|facebook\.com|video\.|\.mp4|\.webm|\.ogg)\/.+$/;
         return regex.test(string);
@@ -27,14 +45,14 @@ function YoutubeComp() {
             editor.commands.setYoutubeVideo({
                 src: url,
             });
-            setToggle(false); // Close the input box after setting the video
+            setToggle(false);
         }
     }, [editor, url]);
 
     const clearUrl = useCallback(() => {
-        setUrl(''); // Clear the input value
-        setError(''); // Clear the error message
-        setToggle(false); // Close the input box
+        setUrl(''); 
+        setError('');
+        setToggle(false);
     }, []);
 
     if (!editor) {
@@ -43,7 +61,7 @@ function YoutubeComp() {
 
     return (
         <>
-            <div className='tip-HighlightComp position-relative'>
+            <div className='tip-HighlightComp position-relative' ref={containerRef}>
                 <button className='bg-none' onClick={() => setToggle(!toggle)} data-tooltip-id="my-tooltip" data-tooltip-content="Youtube">
                     <MdOutlineVideoLabel />
                 </button>

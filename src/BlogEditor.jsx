@@ -32,15 +32,14 @@ import LineSpaceComp from "./components/LineSpaceComp";
 import ColorComp from "./components/ColorComp";
 import FontSizeComp from "./components/FontSizeComp";
 import FontSize from "./FontSize";
-import ResizableImage from "./ResizableImage";
+// import ResizableImage from "./ResizableImage";
 import Link from "@tiptap/extension-link";
 import LinkComp from "./components/LinkComp";
 import Youtube from "@tiptap/extension-youtube";
 import YoutubeComp from "./components/YoutubeComp";
 import ImageComp from "./components/ImageComp";
 import SearchComp from "./components/SearchComp";
- 
-
+import ResizableRotatableImage from './ResizableRotatableImage';
 
 const EditorComponent = ({ outline, setOutline }) => {
   const { editor } = useCurrentEditor();
@@ -217,7 +216,7 @@ const extensions = [
   TableRow,
   TableHeader,
   CustomTableCell,
-  ResizableImage,
+  ResizableRotatableImage,
   Paragraph,
   Document,
   Underline,

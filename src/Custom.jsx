@@ -9,6 +9,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
 import ResizableRotatableImage from './ResizableRotatableImage'; // Import your custom extension
+import SearchComp from "./components/SearchComp";
 
 const Editor = () => {
   const { editor } = useCurrentEditor();
@@ -39,6 +40,7 @@ const Editor = () => {
     <>
       <div className="control-group taptap-header">
         <div className="button-group">
+        <SearchComp />
           <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()}>Undo</button>
           <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()}>Redo</button>
           <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}>B</button>

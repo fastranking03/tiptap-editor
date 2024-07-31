@@ -77,7 +77,6 @@ const ResizableRotatableImage = Image.extend({
             const newHeight = startHeight + (e.pageY - startY) * (corner.includes('bottom') ? 1 : -1);
             img.style.width = `${newWidth}px`;
             img.style.height = `${newHeight}px`;
-            img.style.border = "1px solid"
             editor.chain().updateAttributes('resizableImage', {
               width: img.style.width,
               height: img.style.height,
@@ -101,7 +100,7 @@ const ResizableRotatableImage = Image.extend({
 
       rotateHandle.addEventListener('click', () => {
         const currentRotate = parseInt(img.style.transform.replace('rotate(', '').replace(')', ''), 10) || 0;
-        const newRotate = (currentRotate + 90) % 360;
+        const newRotate = (currentRotate + 180) % 360;
         img.style.transform = `rotate(${newRotate}deg)`;
         editor.chain().updateAttributes('resizableImage', {
           rotate: `${newRotate}deg`,

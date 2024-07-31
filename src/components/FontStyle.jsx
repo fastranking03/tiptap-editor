@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCurrentEditor } from '@tiptap/react';
 import { TfiAngleDown  } from "react-icons/tfi";
 const Font = () => {
  const [toggle, setToggle] = useState(false);
  const { editor } = useCurrentEditor();
+ const containerRef = useRef(null);
+
+ const handleClickOutside = (event) => {
+   if (containerRef.current && !containerRef.current.contains(event.target)) {
+    setToggle(false);
+   }
+ };
+
+ useEffect(() => {
+   if (editor) {
+     document.addEventListener('mousedown', handleClickOutside);
+   } else {
+     document.removeEventListener('mousedown', handleClickOutside);
+   }
+
+   return () => {
+     document.removeEventListener('mousedown', handleClickOutside);
+   };
+ }, [editor]);
   return (
-    <div className='text-box position-relative'>
+    <div className='text-box position-relative' ref={containerRef}>
     <button className='bg-none d-flex typograpy' onClick={() => setToggle(!toggle)} data-tooltip-id="my-tooltip" data-tooltip-content="font">Default <TfiAngleDown /></button>
     {toggle && (
      <div className='box-li comman-grid'>

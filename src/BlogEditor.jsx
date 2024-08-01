@@ -20,7 +20,7 @@ import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import Underline from "@tiptap/extension-underline";
-import CustomTableCell from "./CustomTableCell"; // Adjust the import based on your file structure
+import CustomTableCell from "./CustomTableCell";
 import PageBreak from "./PageBreak";
 import Typography from "./components/Typography";
 import TableComp from "./components/TableComp";
@@ -40,6 +40,8 @@ import YoutubeComp from "./components/YoutubeComp";
 import ImageComp from "./components/ImageComp";
 import SearchComp from "./components/SearchComp";
 import ResizableRotatableImage from './ResizableRotatableImage';
+import TextIndent from './TextIndent'; 
+import IntentComp from "./components/IntentComp";
 
 const EditorComponent = ({ outline, setOutline }) => {
   const { editor } = useCurrentEditor();
@@ -74,7 +76,6 @@ const EditorComponent = ({ outline, setOutline }) => {
     };
   }, [editor, setOutline]);
 
- 
   if (!editor) {
     return null;
   }
@@ -177,6 +178,7 @@ const EditorComponent = ({ outline, setOutline }) => {
               <LuListOrdered />
             </button>
           </div>
+          <IntentComp/>
           <button
             className="bg-none"
             data-tooltip-id="my-tooltip" data-tooltip-content="Page Break"
@@ -220,6 +222,7 @@ const extensions = [
   Paragraph,
   Document,
   Underline,
+  TextIndent,
   StarterKit.configure({
     bulletList: {
       keepMarks: true,

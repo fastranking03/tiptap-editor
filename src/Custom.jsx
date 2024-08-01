@@ -1,5 +1,5 @@
 import './styles.scss';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import ListItem from '@tiptap/extension-list-item';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
@@ -9,10 +9,13 @@ import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
 import ResizableRotatableImage from './ResizableRotatableImage'; // Import your custom extension
+import TextIndent from './TextIndent'; // Import the TextIndent extension
 import SearchComp from "./components/SearchComp";
+import { MdFormatIndentDecrease, MdFormatIndentIncrease } from "react-icons/md";
 
 const Editor = () => {
   const { editor } = useCurrentEditor();
+  const [indentLevel, setIndentLevel] = useState(0);
 
   const addImage = useCallback(() => {
     const input = document.createElement('input');
@@ -32,6 +35,22 @@ const Editor = () => {
     input.click();
   }, [editor]);
 
+  const increaseIndent = useCallback(() => {
+    setIndentLevel(prev => {
+      const newLevel = prev < 7 ? prev + 1 : prev - 1;
+      editor.chain().focus().setIndent(newLevel * 30).run();
+      return newLevel;
+    });
+  }, [editor]);
+
+  const decreaseIndent = useCallback(() => {
+    setIndentLevel(prev => {
+      const newLevel = prev > 0 ? prev - 1 : 0;
+      editor.chain().focus().setIndent(newLevel * 30).run();
+      return newLevel;
+    });
+  }, [editor]);
+
   if (!editor) {
     return null;
   }
@@ -40,12 +59,10 @@ const Editor = () => {
     <>
       <div className="control-group taptap-header">
         <div className="button-group">
-        <SearchComp />
+          <SearchComp />
           <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()}>Undo</button>
           <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()}>Redo</button>
           <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}>B</button>
- 
- 
           <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'is-active' : ''}>Ordered list</button>
           <button onClick={() => editor.chain().focus().toggleHighlight().run()} className={editor.isActive('highlight') ? 'is-active' : ''}>Highlight</button>
           <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}>Left</button>
@@ -54,8 +71,9 @@ const Editor = () => {
           <button onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={editor.isActive({ textAlign: 'justify' }) ? 'is-active' : ''}>Justify</button>
           <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={editor.isActive('codeBlock') ? 'is-active' : ''}>Code block</button>
           <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'is-active' : ''}>Blockquote</button>
-          
           <button onClick={addImage}>Upload img</button>
+          <button onClick={decreaseIndent}><MdFormatIndentDecrease /></button>
+          <button onClick={increaseIndent}><MdFormatIndentIncrease /></button>
         </div>
       </div>
     </>
@@ -67,6 +85,7 @@ const extensions = [
   TextAlign.configure({ types: ['heading', 'paragraph'] }),
   Highlight,
   ResizableRotatableImage, // Use the custom extension
+  TextIndent, // Use the custom TextIndent extension
   Paragraph,
   Document,
   StarterKit.configure({

@@ -13,7 +13,7 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/tiptap" element={<MenuBar/>} />
-              <Route path="/blog-editor" element={<BlogEditor/>} />
+              <Route path="/" element={<BlogEditor/>} />
               <Route path="/custom" element={<Custom/>} />
             </Routes>
           </BrowserRouter>
@@ -22,4 +22,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

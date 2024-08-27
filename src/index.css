@@ -41,7 +41,7 @@ body {
 
 .tiptap {
   caret-color: var(--purple);
-  margin: 1.5rem
+  margin: 4.5rem 3rem;
 }
 
 .tiptap:focus {
@@ -360,9 +360,14 @@ kbd {
     border-bottom: 3px solid #00BCD4;
     border-top-right-radius: 15px;
     border-top-left-radius: 15px;
+    position: fixed;
+    width: 100%;
+    background: #fff;
+    z-index: 999;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
 .main-card{
-    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    /* box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px; */
     margin: 10px;
     border-radius: 20px;
     /* height: 100vh; */
@@ -426,3 +431,30 @@ table td,
   cursor: col-resize;
 
 }
+
+@media (max-width:1350px)  {
+  .flex2 {
+    margin: 110px 10px;
+  }
+  .tiptap {
+    margin: 6.9rem 2rem;
+}
+}
+
+img[style*="float: left"] {
+  float: left;
+  margin-right: 1em;
+}
+
+img[style*="float: right"] {
+  float: right;
+  margin-left: 1em;
+}
+
+img[style*="float: center"] {
+  display: block;
+  margin: 0 auto;
+}
+
+
+

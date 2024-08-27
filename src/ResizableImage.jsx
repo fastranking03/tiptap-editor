@@ -1,79 +1,110 @@
-import Image from '@tiptap/extension-image';
+import { Node } from '@tiptap/core';
+import { mergeAttributes } from '@tiptap/react';
 
-const ResizableImage = Image.extend({
+export default Node.create({
+  name: 'resizableImage',
+
+  group: 'block',
+
+  inline: false,
+
+  selectable: true,
+
+  draggable: true,
+
+  addOptions() {
+    return {
+      HTMLAttributes: {},
+    };
+  },
+
   addAttributes() {
     return {
-      ...this.parent?.(),
+      src: {
+        default: null,
+      },
       width: {
         default: 'auto',
-        parseHTML: element => element.style.width || 'auto',
-        renderHTML: attributes => {
-          if (!attributes.width) {
-            return {};
-          }
-          return { style: `width: ${attributes.width}` };
-        },
       },
-      rotate: {
-        default: '0',
-        parseHTML: element => element.style.transform?.replace(/[^0-9]/g, '') || '0',
-        renderHTML: attributes => {
-          if (!attributes.rotate) {
-            return {};
-          }
-          return { style: `transform: rotate(${attributes.rotate}deg)` };
-        },
+      height: {
+        default: 'auto',
+      },
+      alignment: {
+        default: 'center',
+        parseHTML: element => element.style.float || 'center',
+      },
+      rotation: {
+        default: 0,
       },
     };
   },
-  addNodeView() {
-    return ({ node, getPos }) => {
-      const dom = document.createElement('div');
-      dom.className = 'resizable-image';
-      
-      const img = document.createElement('img');
-      img.src = node.attrs.src;
-      img.style.width = node.attrs.width;
-      img.style.transform = `rotate(${node.attrs.rotate}deg)`;
 
-      const handleMousedown = event => {
-        img.classList.add('resizing');
-        const startX = event.clientX;
-        const startWidth = parseInt(document.defaultView.getComputedStyle(img).width, 10);
-        
-        const doDrag = dragEvent => {
-          img.style.width = `${startWidth + dragEvent.clientX - startX}px`;
-          this.editor.commands.updateAttributes('image', { width: img.style.width });
-        };
-        const stopDrag = () => {
-          img.classList.remove('resizing');
-          document.documentElement.removeEventListener('mousemove', doDrag, false);
-          document.documentElement.removeEventListener('mouseup', stopDrag, false);
-        };
+  parseHTML() {
+    return [
+      {
+        tag: 'img[src]',
+      },
+    ];
+  },
 
-        document.documentElement.addEventListener('mousemove', doDrag, false);
-        document.documentElement.addEventListener('mouseup', stopDrag, false);
+  renderHTML({ HTMLAttributes }) {
+    const { alignment } = HTMLAttributes;
+    const style = `float: ${alignment}; transform: rotate(${HTMLAttributes.rotation}deg);`;
+    return ['img', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { style })];
+  },
 
-        event.preventDefault();
-      };
+  addCommands() {
+    return {
+      setImage: options => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: options,
+        });
+      },
+      setImageSize: (width, height) => ({ commands, tr }) => {
+        const { selection } = tr;
+        const node = tr.doc.nodeAt(selection.from);
 
-      img.addEventListener('mousedown', handleMousedown);
+        if (node.type.name === this.name) {
+          const newAttrs = {
+            ...node.attrs,
+            width,
+            height,
+          };
 
-      dom.appendChild(img);
-      return {
-        dom,
-        update: updatedNode => {
-          if (updatedNode.type.name !== 'image') {
-            return false;
-          }
-          img.src = updatedNode.attrs.src;
-          img.style.width = updatedNode.attrs.width;
-          img.style.transform = `rotate(${updatedNode.attrs.rotate}deg)`;
-          return true;
-        },
-      };
+          return commands.updateAttributes(this.name, newAttrs);
+        }
+        return false;
+      },
+      setImageAlignment: alignment => ({ commands, tr }) => {
+        const { selection } = tr;
+        const node = tr.doc.nodeAt(selection.from);
+
+        if (node.type.name === this.name) {
+          const newAttrs = {
+            ...node.attrs,
+            alignment,
+          };
+
+          return commands.updateAttributes(this.name, newAttrs);
+        }
+        return false;
+      },
+      rotateImage: () => ({ commands, tr }) => {
+        const { selection } = tr;
+        const node = tr.doc.nodeAt(selection.from);
+
+        if (node.type.name === this.name) {
+          const newRotation = (node.attrs.rotation + 90) % 360;
+          const newAttrs = {
+            ...node.attrs,
+            rotation: newRotation,
+          };
+
+          return commands.updateAttributes(this.name, newAttrs);
+        }
+        return false;
+      },
     };
   },
 });
-
-export default ResizableImage;

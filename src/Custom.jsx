@@ -8,8 +8,7 @@ import { EditorProvider, useCurrentEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
-import ResizableRotatableImage from './ResizableRotatableImage'; // Import your custom extension
-import TextIndent from './TextIndent'; // Import the TextIndent extension
+import ResizableImage from './ResizableImage'; // Import the ResizableImage extension
 import SearchComp from "./components/SearchComp";
 import { MdFormatIndentDecrease, MdFormatIndentIncrease } from "react-icons/md";
 
@@ -51,6 +50,18 @@ const Editor = () => {
     });
   }, [editor]);
 
+  const alignImage = useCallback((alignment) => {
+    editor.chain().focus().setImageAlignment(alignment).run();
+  }, [editor]);
+
+  const resizeImage = useCallback((width, height) => {
+    editor.chain().focus().setImageSize(width, height).run();
+  }, [editor]);
+
+  const rotateImage = useCallback(() => {
+    editor.chain().focus().rotateImage().run();
+  }, [editor]);
+
   if (!editor) {
     return null;
   }
@@ -72,6 +83,12 @@ const Editor = () => {
           <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={editor.isActive('codeBlock') ? 'is-active' : ''}>Code block</button>
           <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'is-active' : ''}>Blockquote</button>
           <button onClick={addImage}>Upload img</button>
+          <button onClick={() => alignImage('left')}>Align Left</button>
+          <button onClick={() => alignImage('center')}>Align Center</button>
+          <button onClick={() => alignImage('right')}>Align Right</button>
+          <button onClick={() => resizeImage('100%', 'auto')}>Resize Full Width</button>
+          <button onClick={() => resizeImage('50%', 'auto')}>Resize Half Width</button>
+          <button onClick={rotateImage}>Rotate</button>
           <button onClick={decreaseIndent}><MdFormatIndentDecrease /></button>
           <button onClick={increaseIndent}><MdFormatIndentIncrease /></button>
         </div>
@@ -84,8 +101,7 @@ const extensions = [
   TextStyle.configure({ types: [ListItem.name] }),
   TextAlign.configure({ types: ['heading', 'paragraph'] }),
   Highlight,
-  ResizableRotatableImage, // Use the custom extension
-  TextIndent, // Use the custom TextIndent extension
+  ResizableImage, // Use the custom ResizableImage extension
   Paragraph,
   Document,
   StarterKit.configure({

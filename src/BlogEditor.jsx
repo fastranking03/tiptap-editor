@@ -24,7 +24,7 @@ import CustomTableCell from "./CustomTableCell";
 import PageBreak from "./PageBreak";
 import Typography from "./components/Typography";
 import TableComp from "./components/TableComp";
-import FontFamily from '@tiptap/extension-font-family'
+import FontFamily from "@tiptap/extension-font-family";
 import FontStyle from "./components/FontStyle";
 import HighlightComp from "./components/HighlightComp";
 import AlignComp from "./components/AlignComp";
@@ -39,8 +39,8 @@ import Youtube from "@tiptap/extension-youtube";
 import YoutubeComp from "./components/YoutubeComp";
 import ImageComp from "./components/ImageComp";
 import SearchComp from "./components/SearchComp";
-import ResizableRotatableImage from './ResizableRotatableImage';
-import TextIndent from './TextIndent'; 
+import ResizableRotatableImage from "./ResizableRotatableImage";
+import TextIndent from "./TextIndent";
 import IntentComp from "./components/IntentComp";
 
 const EditorComponent = ({ outline, setOutline }) => {
@@ -82,10 +82,9 @@ const EditorComponent = ({ outline, setOutline }) => {
 
   return (
     <>
-   
       <div className="control-group taptap-header">
         <div className="button-group">
-        <SearchComp  editor={editor}/>
+          <SearchComp editor={editor} />
           <div>
             <button
               className="bg-none"
@@ -99,7 +98,7 @@ const EditorComponent = ({ outline, setOutline }) => {
             <button
               className="bg-none"
               data-tooltip-id="my-tooltip"
-              data-tooltip-content="Redu"
+              data-tooltip-content="Redo"
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().chain().focus().redo().run()}
             >
@@ -115,9 +114,7 @@ const EditorComponent = ({ outline, setOutline }) => {
               data-tooltip-content="Bold"
               onClick={() => editor.chain().focus().toggleBold().run()}
               disabled={!editor.can().chain().focus().toggleBold().run()}
-              className={
-                editor.isActive("bold") ? "is-active bg-none" : "bg-none"
-              }
+              className={editor.isActive("bold") ? "is-active bg-none" : "bg-none"}
             >
               <AiOutlineBold />
             </button>
@@ -128,9 +125,7 @@ const EditorComponent = ({ outline, setOutline }) => {
               data-tooltip-content="Italic"
               onClick={() => editor.chain().focus().toggleItalic().run()}
               disabled={!editor.can().chain().focus().toggleItalic().run()}
-              className={
-                editor.isActive("italic") ? "is-active bg-none" : "bg-none"
-              }
+              className={editor.isActive("italic") ? "is-active bg-none" : "bg-none"}
             >
               <FiItalic />
             </button>
@@ -144,8 +139,7 @@ const EditorComponent = ({ outline, setOutline }) => {
                 editor.isActive("underline") ? "is-active bg-none" : "bg-none"
               }
             >
-              {" "}
-              <FiUnderline />{" "}
+              <FiUnderline />
             </button>
           </div>
           <ColorComp />
@@ -161,7 +155,8 @@ const EditorComponent = ({ outline, setOutline }) => {
           <div>
             <button
               onClick={() => editor.chain().focus().toggleBulletList().run()}
-              data-tooltip-id="my-tooltip" data-tooltip-content="Unorder List"
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Unordered List"
               className={
                 editor.isActive("bulletList") ? "is-active bg-none" : "bg-none"
               }
@@ -170,7 +165,8 @@ const EditorComponent = ({ outline, setOutline }) => {
             </button>
             <button
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              data-tooltip-id="my-tooltip" data-tooltip-content="Order List"
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Ordered List"
               className={
                 editor.isActive("orderedList") ? "is-active bg-none" : "bg-none"
               }
@@ -178,10 +174,11 @@ const EditorComponent = ({ outline, setOutline }) => {
               <LuListOrdered />
             </button>
           </div>
-          <IntentComp/>
+          <IntentComp />
           <button
             className="bg-none"
-            data-tooltip-id="my-tooltip" data-tooltip-content="Page Break"
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="Page Break"
             onClick={() => editor.chain().focus().insertPageBreak().run()}
           >
             <MdOutlineInsertPageBreak />
@@ -204,7 +201,7 @@ const extensions = [
     defaultProtocol: "https",
     protocols: ["ftp", "mailto"],
   }),
-  FontFamily,  
+  FontFamily,
   Youtube.configure({
     controls: false,
     nocookie: true,
@@ -226,11 +223,11 @@ const extensions = [
   StarterKit.configure({
     bulletList: {
       keepMarks: true,
-      keepAttributes: false,
+      keepAttributes: true, // Preserves list structure when applying headings
     },
     orderedList: {
       keepMarks: true,
-      keepAttributes: false,
+      keepAttributes: true, // Preserves list structure when applying headings
     },
   }),
   LineHeight,
@@ -258,7 +255,6 @@ const EditorWrapper = () => {
         <div className="flex2">
           <div className="outline">
             <h3>Outline</h3>
-            {/* <p>Headings you add to the document will appear here.</p>  */}
             <ul className="outline-ul">
               {outline.map((heading, index) => (
                 <li

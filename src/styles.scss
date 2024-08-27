@@ -1,3 +1,4 @@
+ 
 .tiptap {
     :first-child {
       margin-top: 0;
@@ -33,27 +34,27 @@
       margin-bottom: 1.5rem;
     }
   
-    h1 { 
-      font-size: 40px; 
-    }
+    // h1 { 
+    //   font-size: 40px; 
+    // }
   
-    h2 { 
-      font-size: 32px; 
-    }
+    // h2 { 
+    //   font-size: 32px; 
+    // }
   
-    h3 { 
-      font-size: 28px; 
-    }
+    // h3 { 
+    //   font-size: 28px; 
+    // }
   
-    h4 {
-       font-size: 22px;
-    }
-    h5{
-      font-size: 18px;
-    }
-    h6 { 
-      font-size: 14px; 
-    }
+    // h4 {
+    //    font-size: 22px;
+    // }
+    // h5{
+    //   font-size: 18px;
+    // }
+    // h6 { 
+    //   font-size: 14px; 
+    // }
   
     /* Code and preformatted text styles */
     code {
@@ -185,13 +186,14 @@
      width: 20%;
 }
 .flex2{
-  float: left;
-  width: 19%;
-  box-shadow: 0 0 25px #aaaaaa40;
-  margin: 20px 10px;
-  border-radius: 15px;
-  padding: 40px 20px;
-  height: 100vh;
+    position: fixed;
+    float: left;
+    width: 19%;
+    box-shadow: 0 0 25px rgba(170, 170, 170, 0.2509803922);
+    margin: 70px 10px;
+    border-radius: 15px;
+    padding: 40px 20px;
+    height: 80vh;
 }
 .tiptap{
   float: right;
@@ -200,7 +202,8 @@
   border-radius: 15px;
   padding:20px 20px;
   overflow: hidden auto;
-  height: 100vh;
+  height: 80vh;
+  caret-color: #000 !important;
 }  
 .box-li{
   display: flex;
@@ -338,7 +341,8 @@ mark {
   background-color: yellow; // Or any color you prefer
 }
  .outline-ul li{
-  overflow: scroll;
+  overflow-x: scroll;
+  white-space: nowrap;
  }
 
 .resizable-image {
@@ -399,9 +403,8 @@ mark {
 // }
 
 .resizable-image img {
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
+  width: 100%  !important;
+  object-fit: cover;
 }
 .table-header{
   display: flex;
@@ -422,3 +425,4 @@ mark {
 .clear-button{
   margin: 5px;
 }
+ 

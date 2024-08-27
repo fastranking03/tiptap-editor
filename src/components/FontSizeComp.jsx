@@ -1,35 +1,31 @@
 import { useCurrentEditor } from '@tiptap/react';
 import { useState } from 'react';
 import { HiPlus, HiOutlineMinus } from "react-icons/hi";
+import { useFontSize } from '../FontSizeContext';
 
 function FontSizeComp() {
-  const [fontSize, setFontSize] = useState(16);
+  const { fontSize, setFontSize } = useFontSize();
   const { editor } = useCurrentEditor();
 
-  // Predefined font sizes
-  const fontSizes = [8, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60];
-  
   // Function to apply font size and update the editor
   const applyFontSize = (size) => {
-    if (fontSizes.includes(size)) {
-      setFontSize(size);
+    setFontSize(size);
+    if (editor && editor.chain) {
       editor.chain().focus().setFontSize(`${size}px`).run();
     }
   };
 
-  // Increase font size to the next value in fontSizes
+  // Increase font size by 1
   const IncFontSize = () => {
-    const currentIndex = fontSizes.indexOf(fontSize);
-    if (currentIndex !== -1 && currentIndex < fontSizes.length - 1) {
-      applyFontSize(fontSizes[currentIndex + 1]);
-    }
+    const newSize = fontSize + 1;
+    applyFontSize(newSize);
   };
 
-  // Decrease font size to the previous value in fontSizes
+  // Decrease font size by 1
   const DecFontSize = () => {
-    const currentIndex = fontSizes.indexOf(fontSize);
-    if (currentIndex !== -1 && currentIndex > 0) {
-      applyFontSize(fontSizes[currentIndex - 1]);
+    const newSize = fontSize - 1;
+    if (newSize >= 8) {
+      applyFontSize(newSize);
     }
   };
 
@@ -53,10 +49,12 @@ function FontSizeComp() {
         data-tooltip-id="my-tooltip" 
         data-tooltip-content="Font Size"
       >
-        {fontSizes.map(size => (
-          <option key={size} value={size}>
-            {size}px
-          </option>
+        {[...Array(61).keys()].map(size => (
+          size >= 8 && (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          )
         ))}
       </select>
       <button className='bg-none' onClick={IncFontSize} data-tooltip-id="my-tooltip" data-tooltip-content="Increase">

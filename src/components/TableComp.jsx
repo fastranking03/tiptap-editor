@@ -74,7 +74,7 @@ const TableComp = () => {
 
   return (
     <>
-      <div className='table-selector'>
+      <div className='table-selector' ref={containerRef}>
         <button className='bg-none table-btn' onClick={() => setIsSelecting(!isSelecting)} data-tooltip-id="my-tooltip" data-tooltip-content="Table"><BsTable /></button>
         {isSelecting && (
           <div className='comman-grid' style={gridStyle} onMouseLeave={handleMouseLeave}>
@@ -109,7 +109,7 @@ const TableComp = () => {
           </div>
         )}
       </div>
-      <div className='text-box position-relative'>
+      <div className='text-box position-relative' ref={containerRef}>
         <button className='bg-none table-btn' onClick={() => setToggle(!toggle)} data-tooltip-id="my-tooltip" data-tooltip-content="Options"><SlOptionsVertical /></button>
         {toggle && (
           <div className='box-li comman-grid'>

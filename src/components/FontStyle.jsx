@@ -23,6 +23,7 @@ const Font = () => {
      document.removeEventListener('mousedown', handleClickOutside);
    };
  }, [editor]);
+ 
   return (
     <div className='text-box position-relative' ref={containerRef}>
     <button className='bg-none d-flex typograpy' onClick={() => setToggle(!toggle)} data-tooltip-id="my-tooltip" data-tooltip-content="font">Default <TfiAngleDown /></button>

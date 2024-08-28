@@ -50,7 +50,6 @@ const EditorComponent = ({ outline, setOutline }) => {
     if (!editor) {
       return;
     }
-
     const updateOutline = () => {
       const headings = [];
       editor.state.doc.descendants((node, pos) => {
@@ -93,7 +92,7 @@ const EditorComponent = ({ outline, setOutline }) => {
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().chain().focus().undo().run()}
             >
-              <IoIosUndo />
+            <IoIosUndo />
             </button>
             <button
               className="bg-none"
@@ -102,7 +101,7 @@ const EditorComponent = ({ outline, setOutline }) => {
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().chain().focus().redo().run()}
             >
-              <IoIosRedo />
+            <IoIosRedo />
             </button>
           </div>
           <Typography />
@@ -235,10 +234,8 @@ const extensions = [
 ];
 
 const content = ` `;
-
 const EditorWrapper = () => {
   const [outline, setOutline] = useState([]);
-
   return (
     <>
       <div className="parent-wrapper">

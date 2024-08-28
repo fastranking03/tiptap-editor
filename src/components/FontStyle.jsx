@@ -1,94 +1,123 @@
 import { useEffect, useRef, useState } from "react";
 import { useCurrentEditor } from '@tiptap/react';
-import { TfiAngleDown  } from "react-icons/tfi";
+import { TfiAngleDown } from "react-icons/tfi";
+
 const Font = () => {
- const [toggle, setToggle] = useState(false);
- const { editor } = useCurrentEditor();
- const containerRef = useRef(null);
+  const [toggle, setToggle] = useState(false);
+  const [selectedFont, setSelectedFont] = useState('Default');
+  const { editor } = useCurrentEditor();
+  const containerRef = useRef(null);
 
- const handleClickOutside = (event) => {
-   if (containerRef.current && !containerRef.current.contains(event.target)) {
-    setToggle(false);
-   }
- };
+  const handleClickOutside = (event) => {
+    if (containerRef.current && !containerRef.current.contains(event.target)) {
+      setToggle(false);
+    }
+  };
 
- useEffect(() => {
-   if (editor) {
-     document.addEventListener('mousedown', handleClickOutside);
-   } else {
-     document.removeEventListener('mousedown', handleClickOutside);
-   }
+  const updateFont = (fontFamily) => {
+    editor.chain().focus().setFontFamily(fontFamily).run();
+    setSelectedFont(fontFamily);
+  };
 
-   return () => {
-     document.removeEventListener('mousedown', handleClickOutside);
-   };
- }, [editor]);
- 
+  const updateFontOnEditorChange = () => {
+    if (editor) {
+      const fontFamily = editor.getAttributes('textStyle').fontFamily;
+      setSelectedFont(fontFamily || 'Default');
+    }
+  };
+
+  useEffect(() => {
+    if (editor) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editor]);
+
+  useEffect(() => {
+    if (editor) {
+      updateFontOnEditorChange(); // Initial load
+      
+      editor.on('selectionUpdate', updateFontOnEditorChange);
+      editor.on('transaction', updateFontOnEditorChange);
+
+      return () => {
+        editor.off('selectionUpdate', updateFontOnEditorChange);
+        editor.off('transaction', updateFontOnEditorChange);
+      };
+    }
+  }, [editor]);
+
   return (
     <div className='text-box position-relative' ref={containerRef}>
-    <button className='bg-none d-flex typograpy' onClick={() => setToggle(!toggle)} data-tooltip-id="my-tooltip" data-tooltip-content="font">Default <TfiAngleDown /></button>
-    {toggle && (
-     <div className='box-li comman-grid'>
-             <button
-            onClick={() => editor.chain().focus().setFontFamily('Inter').run()}
+      <button 
+        className='bg-none d-flex typograpy' 
+        onClick={() => setToggle(!toggle)} 
+        data-tooltip-id="my-tooltip" 
+        data-tooltip-content="Font"
+      >
+        {selectedFont} <TfiAngleDown />
+      </button>
+      {toggle && (
+        <div className='box-li comman-grid'>
+          <button
+            onClick={() => updateFont('Inter')}
             className={editor.isActive('textStyle', { fontFamily: 'Inter' }) ? 'is-active' : ''}
             data-test-id="inter"
           >
             Inter
           </button>
           <button
-            onClick={() => editor.chain().focus().setFontFamily('Comic Sans MS, Comic Sans').run()}
-            className={
-              editor.isActive('textStyle', { fontFamily: 'Comic Sans MS, Comic Sans' })
-                ? 'is-active'
-                : ''
-            }
+            onClick={() => updateFont('Comic Sans')}
+            className={editor.isActive('textStyle', { fontFamily: 'Comic Sans MS, Comic Sans' }) ? 'is-active' : ''}
             data-test-id="comic-sans"
           >
             Comic Sans
           </button>
           <button
-            onClick={() => editor.chain().focus().setFontFamily('serif').run()}
+            onClick={() => updateFont('serif')}
             className={editor.isActive('textStyle', { fontFamily: 'serif' }) ? 'is-active' : ''}
             data-test-id="serif"
           >
             Serif
           </button>
           <button
-            onClick={() => editor.chain().focus().setFontFamily('monospace').run()}
+            onClick={() => updateFont('monospace')}
             className={editor.isActive('textStyle', { fontFamily: 'monospace' }) ? 'is-active' : ''}
             data-test-id="monospace"
           >
             Monospace
           </button>
           <button
-            onClick={() => editor.chain().focus().setFontFamily('cursive').run()}
+            onClick={() => updateFont('cursive')}
             className={editor.isActive('textStyle', { fontFamily: 'cursive' }) ? 'is-active' : ''}
             data-test-id="cursive"
           >
             Cursive
           </button>
           <button
-            onClick={() => editor.chain().focus().setFontFamily('var(--title-font-family)').run()}
+            onClick={() => updateFont('CSS variable')}
             className={editor.isActive('textStyle', { fontFamily: 'var(--title-font-family)' }) ? 'is-active' : ''}
             data-test-id="css-variable"
           >
             CSS variable
           </button>
           <button
-            onClick={() => editor.chain().focus().setFontFamily('"Comic Sans MS", "Comic Sans"').run()}
+            onClick={() => updateFont('"Comic Sans"')}
             className={editor.isActive('textStyle', { fontFamily: '"Comic Sans"' }) ? 'is-active' : ''}
             data-test-id="comic-sans-quoted"
           >
             Comic Sans quoted
           </button>
-          <button onClick={() => editor.chain().focus().unsetFontFamily().run()} data-test-id="unsetFontFamily">
+          <button onClick={() => updateFont('unset')} data-test-id="unsetFontFamily">
             Unset font family
           </button>
-     </div>
-   )}
- </div>
-  )
-}
+        </div>
+      )}
+    </div>
+  );
+};
 
-export default Font
+export default Font;

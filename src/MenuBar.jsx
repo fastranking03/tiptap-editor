@@ -1,83 +1,102 @@
-import './styles.scss';
-import { useCallback, useState } from 'react';
-import { Color } from '@tiptap/extension-color';
-import ListItem from '@tiptap/extension-list-item';
-import Document from '@tiptap/extension-document';
-import Paragraph from '@tiptap/extension-paragraph';
-import TextStyle from '@tiptap/extension-text-style';
-import { EditorProvider, useCurrentEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Highlight from '@tiptap/extension-highlight';
-import TextAlign from '@tiptap/extension-text-align';
-import Image from '@tiptap/extension-image';
- 
-import FontFamily from '@tiptap/extension-font-family'
-import FontSize from './FontSize'; // Import the custom FontSize extension
+import { useEffect, useState } from "react";
+import { MdOutlineInsertPageBreak } from "react-icons/md";
+import { RiListUnordered } from "react-icons/ri";
+import { LuListOrdered } from "react-icons/lu";
+import { AiOutlineBold } from "react-icons/ai";
+import { FiItalic, FiUnderline } from "react-icons/fi";
+import { IoIosUndo, IoIosRedo } from "react-icons/io";
+import "./styles.scss";
+import { Color } from "@tiptap/extension-color";
+import ListItem from "@tiptap/extension-list-item";
+import Document from "@tiptap/extension-document";
+import Paragraph from "@tiptap/extension-paragraph";
+import TextStyle from "@tiptap/extension-text-style";
+import { EditorProvider, useCurrentEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Highlight from "@tiptap/extension-highlight";
+import TextAlign from "@tiptap/extension-text-align";
+import LineHeight from "./LineHeight";
+import Table from "@tiptap/extension-table";
+import TableRow from "@tiptap/extension-table-row";
+import TableHeader from "@tiptap/extension-table-header";
+import Underline from "@tiptap/extension-underline";
+import CustomTableCell from "./CustomTableCell";
+import PageBreak from "./PageBreak";
+import Typography from "./components/Typography";
+import TableComp from "./components/TableComp";
+import FontFamily from "@tiptap/extension-font-family";
+import FontStyle from "./components/FontStyle";
+import HighlightComp from "./components/HighlightComp";
+import AlignComp from "./components/AlignComp";
+import LineSpaceComp from "./components/LineSpaceComp";
+import ColorComp from "./components/ColorComp";
+import FontSizeComp from "./components/FontSizeComp";
+import FontSize from "./FontSize";
+import Link from "@tiptap/extension-link";
+import LinkComp from "./components/LinkComp";
+import Youtube from "@tiptap/extension-youtube";
+import YoutubeComp from "./components/YoutubeComp";
+import ImageComp from "./components/ImageComp";
+import SearchComp from "./components/SearchComp";
+import ResizableRotatableImage from "./ResizableRotatableImage";
+import TextIndent from "./TextIndent";
+import IntentComp from "./components/IntentComp";
 
-
-const extensions = [
- 
-  FontFamily,
-  TextStyle,
-  Color.configure({ types: [TextStyle.name, ListItem.name] }),
-  TextStyle.configure({ types: [ListItem.name] }),
-  TextAlign.configure({ types: ['heading', 'paragraph'] }),
-  Highlight,
-  Image,
-  Paragraph,
-  Document,
-  FontSize, // Add the custom FontSize extension
-  StarterKit.configure({
-    bulletList: {
-      keepMarks: true,
-      keepAttributes: false,
-    },
-    orderedList: {
-      keepMarks: true,
-      keepAttributes: false,
-    },
-  }),
-];
-
-const content = '';
-
-const Editor = () => {
+const EditorComponent = ({ outline, setOutline }) => {
   const { editor } = useCurrentEditor();
-  const [fontSize, setFontSize] = useState(16);
 
-  const IncFontSize = () => {
-    if (fontSize < 60) {
-      const newSize = fontSize + 1;
-      setFontSize(newSize);
-      editor.chain().focus().setFontSize(`${newSize}px`).run();
+  useEffect(() => {
+    if (!editor) {
+      return;
     }
-  };
 
-  const DecFontSize = () => {
-    if (fontSize > 0) {
-      const newSize = fontSize - 1;
-      setFontSize(newSize);
-      editor.chain().focus().setFontSize(`${newSize}px`).run();
-    }
-  };
+    const updateOutline = () => {
+      const headings = [];
+      let orderedListIndex = 1;
 
-  const addImage = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = () => {
-      const file = input.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64URL = event.target.result;
-          editor.chain().focus().setImage({ src: base64URL }).run();
-        };
-        reader.readAsDataURL(file);
-      }
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "heading") {
+          headings.push({
+            text: node.textContent,
+            level: node.attrs.level,
+            pos,
+            type: "heading",
+          });
+        } else if (node.type.name === "bulletList" || node.type.name === "orderedList") {
+          node.descendants((listItemNode, listItemPos) => {
+            if (listItemNode.type.name === "listItem") {
+              const listItemObj = {
+                text: listItemNode.textContent,
+                level: listItemNode.attrs.level || 1,
+                pos: listItemPos,
+                type: node.type.name,
+              };
+
+              if (node.type.name === "orderedList") {
+                listItemObj.listIndex = orderedListIndex;
+                orderedListIndex++;
+              }
+
+              headings.push(listItemObj);
+            }
+          });
+        }
+      });
+
+      setOutline(headings);
     };
-    input.click();
-  }, [editor]);
+
+    
+    editor.on("update", updateOutline);
+
+    // Initial update
+    updateOutline();
+
+    // Cleanup
+    return () => {
+      editor.off("update", updateOutline);
+    };
+  }, [editor, setOutline]);
 
   if (!editor) {
     return null;
@@ -87,58 +106,193 @@ const Editor = () => {
     <>
       <div className="control-group taptap-header">
         <div className="button-group">
-          <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()}>Undo</button>
-          <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()}>Redo</button>
+          <SearchComp editor={editor} />
           <div>
-              <button onClick={() => editor.chain().focus().setFontFamily('Inter').run()} className={editor.isActive('textStyle', { fontFamily: 'Inter' }) ? 'is-active' : ''} data-test-id="inter" >Inter</button>
-              <button onClick={() => editor.chain().focus().setFontFamily('Comic Sans MS, Comic Sans').run()} className={ editor.isActive('textStyle', { fontFamily: 'Comic Sans MS, Comic Sans' }) ? 'is-active' : '' } data-test-id="comic-sans" > Comic Sans </button>
-              <button onClick={() => editor.chain().focus().setFontFamily('serif').run()} className={editor.isActive('textStyle', { fontFamily: 'serif' }) ? 'is-active' : ''} data-test-id="serif" >Serif</button>
-              <button onClick={() => editor.chain().focus().setFontFamily('monospace').run()} className={editor.isActive('textStyle', { fontFamily: 'monospace' }) ? 'is-active' : ''} data-test-id="monospace" >Monospace</button>
-              <button onClick={() => editor.chain().focus().setFontFamily('cursive').run()} className={editor.isActive('textStyle', { fontFamily: 'cursive' }) ? 'is-active' : ''} data-test-id="cursive">Cursive</button>
-              <button onClick={() => editor.chain().focus().setFontFamily('var(--title-font-family)').run()} className={editor.isActive('textStyle', { fontFamily: 'var(--title-font-family)' }) ? 'is-active' : ''} data-test-id="css-variable"> CSS variable</button>
-              <button onClick={() => editor.chain().focus().setFontFamily('"Comic Sans MS", "Comic Sans"').run()} className={editor.isActive('textStyle', { fontFamily: '"Comic Sans"' }) ? 'is-active' : ''} data-test-id="comic-sans-quoted">Comic Sans quoted</button>
-              <button onClick={() => editor.chain().focus().unsetFontFamily().run()} data-test-id="unsetFontFamily"> Unset font family </button>
-           </div>
-          <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}>B</button>
-          <button onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'is-active' : ''}>Italic</button>
-          <button onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? 'is-active' : ''}>Strike</button>
-          <button onClick={() => editor.chain().focus().toggleCode().run()} disabled={!editor.can().chain().focus().toggleCode().run()} className={editor.isActive('code') ? 'is-active' : ''}>Code</button>
-          <button onClick={() => editor.chain().focus().unsetAllMarks().run()}>Clear marks</button>
-          <button onClick={() => editor.chain().focus().clearNodes().run()}>Clear nodes</button>
-          <button onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive('paragraph') ? 'is-active' : ''}>Paragraph</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}>H1</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}>H2</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}>H3</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} className={editor.isActive('heading', { level: 4 }) ? 'is-active' : ''}>H4</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()} className={editor.isActive('heading', { level: 5 }) ? 'is-active' : ''}>H5</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()} className={editor.isActive('heading', { level: 6 }) ? 'is-active' : ''}>H6</button>
-          <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'is-active' : ''}>Bullet list</button>
-          <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'is-active' : ''}>Ordered list</button>
-          <button onClick={() => editor.chain().focus().toggleHighlight().run()} className={editor.isActive('highlight') ? 'is-active' : ''}>Highlight</button>
-          <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}>Left</button>
-          <button onClick={() => editor.chain().focus().setTextAlign('center').run()} className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}>Center</button>
-          <button onClick={() => editor.chain().focus().setTextAlign('right').run()} className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}>Right</button>
-          <button onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={editor.isActive({ textAlign: 'justify' }) ? 'is-active' : ''}>Justify</button>
-          <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={editor.isActive('codeBlock') ? 'is-active' : ''}>Code block</button>
-          <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'is-active' : ''}>Blockquote</button>
-          <button onClick={() => editor.chain().focus().setHorizontalRule().run()}>Horizontal rule</button>
-          <button onClick={() => editor.chain().focus().setHardBreak().run()}>Hard break</button>
-          <button onClick={() => editor.chain().focus().setColor('#958DF1').run()} className={editor.isActive('textStyle', { color: '#958DF1' }) ? 'is-active' : ''}>Purple</button>
-          <button onClick={() => editor.chain().focus().setColor('#000').run()} className={editor.isActive('textStyle', { color: '#000' }) ? 'is-active' : ''}>Black</button>
-          <button onClick={() => editor.chain().focus().setColor('rgb(255, 0, 0)').run()} className={editor.isActive('textStyle', { backgroundColor: 'rgb(255, 0, 0)' }) ? 'is-active' : ''}>Red</button>
-          <button>Bg</button>
-          <button onClick={addImage}>Upload img</button>
-          <button onClick={IncFontSize}>Inc Font</button>
-          <button>{fontSize}</button>
-          <button onClick={DecFontSize}>Dec Font</button>
-         </div>
+            <button
+              className="bg-none"
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Undo"
+              onClick={() => editor.chain().focus().undo().run()}
+              disabled={!editor.can().chain().focus().undo().run()}
+            >
+              <IoIosUndo />
+            </button>
+            <button
+              className="bg-none"
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Redo"
+              onClick={() => editor.chain().focus().redo().run()}
+              disabled={!editor.can().chain().focus().redo().run()}
+            >
+              <IoIosRedo />
+            </button>
+          </div>
+          <Typography />
+          <FontStyle />
+          <FontSizeComp />
+          <div>
+            <button
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Bold"
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              disabled={!editor.can().chain().focus().toggleBold().run()}
+              className={editor.isActive("bold") ? "is-active bg-none" : "bg-none"}
+            >
+              <AiOutlineBold />
+            </button>
+          </div>
+          <div>
+            <button
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Italic"
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              disabled={!editor.can().chain().focus().toggleItalic().run()}
+              className={editor.isActive("italic") ? "is-active bg-none" : "bg-none"}
+            >
+              <FiItalic />
+            </button>
+          </div>
+          <div>
+            <button
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Underline"
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              className={
+                editor.isActive("underline") ? "is-active bg-none" : "bg-none"
+              }
+            >
+              <FiUnderline />
+            </button>
+          </div>
+          <ColorComp />
+          <HighlightComp />
+          <div className="imagelinkvideo">
+            <LinkComp />
+            <ImageComp />
+            <YoutubeComp />
+          </div>
+          <TableComp />
+          <AlignComp />
+          <LineSpaceComp />
+          <div>
+            <button
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Unordered List"
+              className={
+                editor.isActive("bulletList") ? "is-active bg-none" : "bg-none"
+              }
+            >
+              <RiListUnordered />
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Ordered List"
+              className={
+                editor.isActive("orderedList") ? "is-active bg-none" : "bg-none"
+              }
+            >
+              <LuListOrdered />
+            </button>
+          </div>
+          <IntentComp />
+          <button
+            className="bg-none"
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="Page Break"
+            onClick={() => editor.chain().focus().insertPageBreak().run()}
+          >
+            <MdOutlineInsertPageBreak />
+          </button>
+        </div>
       </div>
     </>
   );
 };
 
-export default () => {
+const extensions = [
+  Color,
+  FontSize,
+  Link.configure({
+    openOnClick: true,
+    HTMLAttributes: {
+      class: "my-custom-class",
+    },
+    autolink: true,
+    defaultProtocol: "https",
+    protocols: ["ftp", "mailto"],
+  }),
+  FontFamily,
+  Youtube.configure({
+    controls: false,
+    nocookie: true,
+  }),
+  TextStyle.configure({ types: [ListItem.name] }),
+  TextAlign.configure({ types: ["heading", "paragraph"] }),
+  Highlight.configure({ multicolor: true }),
+  Table.configure({
+    resizable: true,
+  }),
+  TableRow,
+  TableHeader,
+  CustomTableCell,
+  ResizableRotatableImage,
+  Paragraph,
+  Document,
+  Underline,
+  TextIndent,
+  StarterKit.configure({
+    bulletList: {
+      keepMarks: true,
+      keepAttributes: true,
+    },
+    orderedList: {
+      keepMarks: true,
+      keepAttributes: true,
+    },
+  }),
+  LineHeight,
+  PageBreak,
+];
+const content = ` `;
+const EditorWrapper = () => {
+  const [outline, setOutline] = useState([]);
   return (
-    <EditorProvider slotBefore={<Editor />} extensions={extensions} content={content}></EditorProvider>
+    <>
+      <div className="parent-wrapper">
+        <div className="flex1">
+          <EditorProvider
+            style={{ height: "800px" }}
+            slotBefore={
+              <EditorComponent outline={outline} setOutline={setOutline} />
+            }
+            extensions={extensions}
+            content={content}
+          ></EditorProvider>
+        </div>
+        <div className="flex2">
+          <div>
+            <div className="content">
+              <h3>Outline</h3>
+              <ul className="outline-ul">
+                {outline.map((item, index) => (
+                  <li key={index}>
+                    <a onClick={() => editor?.commands.scrollTo(item.pos)}>
+                      <span style={{ marginLeft: `${(item.level - 1) * 20}px` }}>
+                        {item.type === "heading" && item.text}
+                        {item.type === "bulletList" && `${item.text}`}
+                        {item.type === "orderedList" && `${item.text}`}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
+export default EditorWrapper;

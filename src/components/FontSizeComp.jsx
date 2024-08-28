@@ -1,27 +1,27 @@
 import { useCurrentEditor } from '@tiptap/react';
-import { useState } from 'react';
 import { HiPlus, HiOutlineMinus } from "react-icons/hi";
 import { useFontSize } from '../FontSizeContext';
+import { useEffect } from 'react';
 
 function FontSizeComp() {
   const { fontSize, setFontSize } = useFontSize();
   const { editor } = useCurrentEditor();
-
-  // Function to apply font size and update the editor
+ 
   const applyFontSize = (size) => {
+ 
     setFontSize(size);
+
+    // Apply font size to the editor if it's available
     if (editor && editor.chain) {
       editor.chain().focus().setFontSize(`${size}px`).run();
     }
   };
 
-  // Increase font size by 1
   const IncFontSize = () => {
     const newSize = fontSize + 1;
     applyFontSize(newSize);
   };
 
-  // Decrease font size by 1
   const DecFontSize = () => {
     const newSize = fontSize - 1;
     if (newSize >= 8) {
@@ -36,6 +36,13 @@ function FontSizeComp() {
       applyFontSize(newSize);
     }
   };
+
+  useEffect(() => {
+    // This useEffect ensures that font size is synchronized with editor changes if needed
+    if (editor && editor.getAttributes('textStyle').fontSize) {
+      setFontSize(parseInt(editor.getAttributes('textStyle').fontSize, 10));
+    }
+  }, [editor, setFontSize]);
 
   return (
     <div className='fontsize-wrap'>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useCurrentEditor } from '@tiptap/react';
 import { TfiAngleDown } from "react-icons/tfi";
-import { useFontSize } from '../FontSizeContext'; // adjust the path as needed
+import { useFontSize } from '../FontSizeContext';
 
 const FONT_SIZE_MAP = {
   1: 42,
@@ -16,7 +16,7 @@ const Typography = () => {
   const [toggle, setToggle] = useState(false);
   const [selectedFont, setSelectedFont] = useState('Normal Text');
   const { editor } = useCurrentEditor();
-  const { fontSize,setFontSize } = useFontSize();
+  const { fontSize, setFontSize } = useFontSize();
   const containerRef = useRef(null);
 
   const handleClickOutside = (event) => {
@@ -41,9 +41,10 @@ const Typography = () => {
     const updateSelectedFont = () => {
       if (editor) {
         const headingLevel = editor.isActive('heading') ? editor.getAttributes('heading').level : 0;
-        const fontSizes = FONT_SIZE_MAP[headingLevel] || fontSize;
+        const fontSizes = headingLevel ? FONT_SIZE_MAP[headingLevel] : fontSize;
+        console.log(fontSizes)
         setSelectedFont(headingLevel === 0 ? 'Normal Text' : `Heading ${headingLevel}`);
-        setFontSize(fontSizes);
+        setFontSize(fontSizes); 
       }
     };
 
@@ -54,14 +55,14 @@ const Typography = () => {
     return () => {
       editor.off('selectionUpdate', updateSelectedFont);
     };
-  }, [editor, toggle ,fontSize]);
+  }, [editor, toggle, fontSize, setFontSize]);
 
   const handleHeadingChange = (level) => {
     const currentLevel = editor.isActive('heading') ? editor.getAttributes('heading').level : 0;
 
     if (level === 0) {
       editor.chain().focus().setParagraph().run();
-      setFontSize(16);
+      setFontSize(fontSize);  
       setSelectedFont('Normal Text');
     } else {
       if (currentLevel === level) {
@@ -75,6 +76,7 @@ const Typography = () => {
       }
 
       const newSize = FONT_SIZE_MAP[level] || fontSize;
+
       setFontSize(newSize);
       editor.chain().focus().setFontSize(`${newSize}px`).run();
 

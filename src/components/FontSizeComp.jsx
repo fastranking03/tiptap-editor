@@ -6,12 +6,9 @@ import { useEffect } from 'react';
 function FontSizeComp() {
   const { fontSize, setFontSize } = useFontSize();
   const { editor } = useCurrentEditor();
- 
-  const applyFontSize = (size) => {
- 
-    setFontSize(size);
 
-    // Apply font size to the editor if it's available
+  const applyFontSize = (size) => {
+    setFontSize(size);
     if (editor && editor.chain) {
       editor.chain().focus().setFontSize(`${size}px`).run();
     }
@@ -29,7 +26,6 @@ function FontSizeComp() {
     }
   };
 
-  // Handle dropdown selection change
   const handleDropdownChange = (e) => {
     const newSize = parseInt(e.target.value, 10);
     if (!isNaN(newSize)) {
@@ -38,9 +34,11 @@ function FontSizeComp() {
   };
 
   useEffect(() => {
-    // This useEffect ensures that font size is synchronized with editor changes if needed
-    if (editor && editor.getAttributes('textStyle').fontSize) {
-      setFontSize(parseInt(editor.getAttributes('textStyle').fontSize, 10));
+    if (editor) {
+      const fontSizeFromEditor = editor.getAttributes('textStyle').fontSize;
+      if (fontSizeFromEditor) {
+        setFontSize(parseInt(fontSizeFromEditor, 10));
+      }
     }
   }, [editor, setFontSize]);
 

@@ -49,55 +49,73 @@ const EditorComponent = ({ outline, setOutline }) => {
     if (!editor) {
       return;
     }
-
+  
     const updateOutline = () => {
-      const headings = [];
+      const newOutline = [];
       let orderedListIndex = 1;
-
+      const addedHeadings = new Set();
+      const addedListItems = new Map(); 
+      let lastAddedListItemFontSize = null;
+    
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name === "heading") {
-          headings.push({
-            text: node.textContent,
-            level: node.attrs.level,
-            pos,
-            type: "heading",
-          });
+          // Heading logic remains unchanged
+          const headingText = node.textContent.trim();
+          if (!addedHeadings.has(headingText)) {
+            addedHeadings.add(headingText);
+            newOutline.push({
+              text: headingText,
+              level: node.attrs.level,
+              pos,
+              type: "heading",
+              fontSize: node.attrs.fontSize || node.attrs.fontSize,
+            });
+          }
         } else if (node.type.name === "bulletList" || node.type.name === "orderedList") {
           node.descendants((listItemNode, listItemPos) => {
             if (listItemNode.type.name === "listItem") {
-              const listItemObj = {
-                text: listItemNode.textContent,
-                level: listItemNode.attrs.level || 1,
-                pos: listItemPos,
-                type: node.type.name,
-              };
-
-              if (node.type.name === "orderedList") {
-                listItemObj.listIndex = orderedListIndex;
-                orderedListIndex++;
+              const listItemText = listItemNode.textContent.trim();
+              const listItemKey = `${node.type.name}-${listItemText}-${listItemPos}`;
+              const listItemFontSize = listItemNode.attrs.fontSize || listItemNode.attrs.fontSize;
+              if (!addedListItems.has(listItemKey) && listItemFontSize !== lastAddedListItemFontSize) {
+                addedListItems.set(listItemKey, true);
+    
+                const listItemObj = {
+                  text: listItemText,
+                  level: listItemNode.attrs.level || 1,
+                  pos: listItemPos,
+                  type: node.type.name,
+                  fontSize: listItemFontSize,
+                };
+    
+                if (node.type.name === "orderedList") {
+                  listItemObj.listIndex = orderedListIndex;
+                  orderedListIndex++;
+                }
+    
+                newOutline.push(listItemObj);
+                lastAddedListItemFontSize = listItemFontSize; 
               }
-
-              headings.push(listItemObj);
             }
           });
         }
       });
-
-      setOutline(headings);
-    };
-
     
-    editor.on("update", updateOutline);
-
-    // Initial update
+      setOutline(newOutline);
+    };
+    
     updateOutline();
-
+    editor.on("transaction", updateOutline);
+    editor.on("update", updateOutline);
+  
     // Cleanup
     return () => {
+      editor.off("transaction", updateOutline);
       editor.off("update", updateOutline);
     };
   }, [editor, setOutline]);
-
+  
+ 
   if (!editor) {
     return null;
   }
@@ -278,7 +296,9 @@ const EditorWrapper = () => {
               <ul className="outline-ul">
                 {outline.map((item, index) => (
                   <li key={index}>
-                    <a onClick={() => editor?.commands.scrollTo(item.pos)}>
+                    <a
+                      onClick={() => editor?.commands.scrollTo(item.pos)}
+                    >
                       <span style={{ marginLeft: `${(item.level - 1) * 20}px` }}>
                         {item.type === "heading" && item.text}
                         {item.type === "bulletList" && `${item.text}`}

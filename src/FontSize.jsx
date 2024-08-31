@@ -1,48 +1,46 @@
-import { Mark } from '@tiptap/core';
+import { Extension } from '@tiptap/core';
 
-const FontSize = Mark.create({
+const FontSize = Extension.create({
   name: 'fontSize',
 
-  addAttributes() {
+  addOptions() {
     return {
-      size: {
-        default: '16px',
-        parseHTML: element => element.style.fontSize,
-        renderHTML: attributes => {
-          return {
-            style: `font-size: ${attributes.size}`,
-          };
-        },
-      },
+      types: ['textStyle', 'paragraph', 'heading', 'listItem'],
+      defaultSize: '16px',
     };
   },
 
-  parseHTML() {
+  addGlobalAttributes() {
     return [
       {
-        tag: 'span[style]',
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: this.options.defaultSize,
+            parseHTML: (element) => element.style.fontSize.replace(/['"]+/g, ''),
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) {
+                return {};
+              }
+              return { style: `font-size: ${attributes.fontSize}` };
+            },
+          },
+        },
       },
     ];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ['span', HTMLAttributes, 0];
-  },
-
   addCommands() {
     return {
-      setFontSize:
-        size =>
-        ({ commands }) => {
-          return commands.setMark(this.name, { size });
-        },
-      unsetFontSize:
-        () =>
-        ({ commands }) => {
-          return commands.unsetMark(this.name);
-        },
+      setFontSize: (size) => ({ chain }) => {
+        return chain().setMark('textStyle', { fontSize: size }).run();
+      },
+      setNodeFontSize: (size) => ({ chain }) => {
+        return chain().setNode('paragraph', { fontSize: size }).run();
+      },
     };
   },
 });
+
 
 export default FontSize;

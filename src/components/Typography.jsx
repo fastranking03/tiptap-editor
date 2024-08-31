@@ -41,10 +41,18 @@ const Typography = () => {
     const updateSelectedFont = () => {
       if (editor) {
         const headingLevel = editor.isActive('heading') ? editor.getAttributes('heading').level : 0;
-        const fontSizes = headingLevel ? FONT_SIZE_MAP[headingLevel] : fontSize;
-        console.log(fontSizes)
-        setSelectedFont(headingLevel === 0 ? 'Normal Text' : `Heading ${headingLevel}`);
-        setFontSize(fontSizes); 
+        if (headingLevel) {
+          setSelectedFont(`Heading ${headingLevel}`);
+          setFontSize(FONT_SIZE_MAP[headingLevel]);
+        } else {
+          setSelectedFont('Normal Text');
+          const currentFontSize = editor.getAttributes('textStyle').fontSize;
+          console.log(currentFontSize)
+          if (currentFontSize) {
+            const parsedFontSize = parseInt(currentFontSize, 10);
+            setFontSize(parsedFontSize);
+          }
+        }
       }
     };
 
@@ -55,34 +63,38 @@ const Typography = () => {
     return () => {
       editor.off('selectionUpdate', updateSelectedFont);
     };
-  }, [editor, toggle, fontSize, setFontSize]);
+  }, [editor, fontSize, setFontSize]);
 
   const handleHeadingChange = (level) => {
     const currentLevel = editor.isActive('heading') ? editor.getAttributes('heading').level : 0;
-
+  
     if (level === 0) {
       editor.chain().focus().setParagraph().run();
-      setFontSize(fontSize);  
       setSelectedFont('Normal Text');
+      
+      const normalFontSize = 16;
+      setFontSize(normalFontSize);
+      editor.chain().focus().setFontSize(`${normalFontSize}px`).run();
+      
     } else {
       if (currentLevel === level) {
         return;
       }
+  
       const isInList = editor.isActive('bulletList') || editor.isActive('orderedList');
       editor.chain().focus().toggleHeading({ level }).run();
-
+  
       if (isInList) {
         editor.chain().focus().toggleOrderedList().run();
       }
-
+  
       const newSize = FONT_SIZE_MAP[level] || fontSize;
-
       setFontSize(newSize);
       editor.chain().focus().setFontSize(`${newSize}px`).run();
-
       setSelectedFont(`Heading ${level}`);
     }
   };
+  
 
   return (
     <div className='text-box position-relative' ref={containerRef}>
@@ -107,6 +119,6 @@ const Typography = () => {
       )}
     </div>
   );
-}
+};
 
 export default Typography;

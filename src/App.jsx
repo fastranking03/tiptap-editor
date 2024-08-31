@@ -12,8 +12,8 @@ function App() {
       <div className="card main-card">
           <BrowserRouter>
             <Routes>
-              <Route path="/tiptap" element={<MenuBar/>} />
-              <Route path="/" element={<BlogEditor/>} />
+              <Route path="/" element={<MenuBar/>} />
+              <Route path="/tiptal" element={<BlogEditor/>} />
               <Route path="/custom" element={<Custom/>} />
             </Routes>
           </BrowserRouter>
